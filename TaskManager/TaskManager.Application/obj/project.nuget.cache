@@ -1,8 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "zXWmgv2o2j0=",
+  "dgSpecHash": "RYWIugO1Ypk=",
   "success": true,
   "projectFilePath": "C:\\Users\\Ultra\\source\\repos\\TaskManagerFullProject\\TaskManager\\TaskManager.Application\\TaskManager.Application.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\Ultra\\.nuget\\packages\\system.componentmodel.annotations\\5.0.0\\system.componentmodel.annotations.5.0.0.nupkg.sha512"
+  ],
   "logs": []
 }
