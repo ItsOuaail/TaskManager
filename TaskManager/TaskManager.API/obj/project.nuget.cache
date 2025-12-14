@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "NYQFzuek+tw=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\Ultra\\source\\repos\\TaskManagerFullProject\\TaskManager\\TaskManager.API\\TaskManager.API.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Ultra\\.nuget\\packages\\microsoft.aspnetcore.openapi\\9.0.11\\microsoft.aspnetcore.openapi.9.0.11.nupkg.sha512",
+    "C:\\Users\\Ultra\\.nuget\\packages\\microsoft.openapi\\1.6.17\\microsoft.openapi.1.6.17.nupkg.sha512"
+  ],
+  "logs": []
+}
