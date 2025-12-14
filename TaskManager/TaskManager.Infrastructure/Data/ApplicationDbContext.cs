@@ -117,7 +117,7 @@ namespace TaskManager.Infrastructure.Data
                     Name = "Admin User",
                     // Password: "password123" (hashed with BCrypt)
                     PasswordHash = "$2a$11$xQdvN3j0Zy0KxqCHNlFZ8Od.0pZqYZGMVh6OyJ7rqhVJ4kZ4sQWbS",
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
                 },
                 new User
                 {
@@ -125,7 +125,7 @@ namespace TaskManager.Infrastructure.Data
                     Email = "user@test.com",
                     Name = "Test User",
                     PasswordHash = "$2a$11$xQdvN3j0Zy0KxqCHNlFZ8Od.0pZqYZGMVh6OyJ7rqhVJ4kZ4sQWbS",
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
                 }
             );
         }
