@@ -1,0 +1,66 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: taskmanager-postgres
+    environment:
+      POSTGRES_DB: taskmanager
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - taskmanager-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # .NET API
+  api:
+    build:
+      context: ./TaskManager
+      dockerfile: Dockerfile
+    container_name: taskmanager-api
+    ports:
+      - "5290:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=taskmanager;Username=postgres;Password=postgres
+      - Jwt__Key=YourSuperSecretKeyThatMustBeAtLeast32CharactersLongForHS256Algorithm!
+      - Jwt__Issuer=TaskManagerAPI
+      - Jwt__Audience=TaskManagerClient
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - taskmanager-network
+    restart: unless-stopped
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./taskmanager-frontend
+      dockerfile: Dockerfile
+    container_name: taskmanager-frontend
+    ports:
+      - "5173:80"
+    environment:
+      - VITE_API_URL=http://localhost:5290/api
+    depends_on:
+      - api
+    networks:
+      - taskmanager-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  taskmanager-network:
+    driver: bridge

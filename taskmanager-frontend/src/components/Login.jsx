@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { LogIn } from 'lucide-react';
 
-const API_URL = 'http://localhost:5290/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5290/api';
 
 function Login({ onLogin }) {
   const [email, setEmail] = useState('');
