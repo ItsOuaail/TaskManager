@@ -88,6 +88,7 @@ function Dashboard({ token, user, onLogout }) {
           </div>
           <button
             onClick={onLogout}
+            aria-label="logout"
             className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition"
           >
             <LogOut className="w-4 h-4" />
@@ -114,6 +115,7 @@ function Dashboard({ token, user, onLogout }) {
           </div>
           <button
             onClick={() => setShowCreateModal(true)}
+            aria-label="new project"
             className="ml-4 flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
           >
             <Plus className="w-5 h-5" />
@@ -130,7 +132,7 @@ function Dashboard({ token, user, onLogout }) {
 
         {/* Projects Grid */}
         {loading ? (
-          <div className="text-center py-12">
+          <div role="status" className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
         ) : projects.length === 0 ? (
@@ -162,6 +164,7 @@ function Dashboard({ token, user, onLogout }) {
                       e.stopPropagation();
                       deleteProject(project.id);
                     }}
+                    aria-label="delete"
                     className="text-red-500 hover:text-red-700 p-1"
                   >
                     <Trash2 className="w-5 h-5" />

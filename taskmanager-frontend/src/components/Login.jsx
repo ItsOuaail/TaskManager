@@ -131,7 +131,7 @@ export default Login;
  * 
  * 3. API REQUEST:
  *    - axios.post sends POST request
- *    - API_URL + /auth/login = http://localhost:5000/api/auth/login
+ *    - API_URL + /auth/login = http://localhost:5290/api/auth/login
  *    - Sends email and password in request body
  *    - Response contains token and user data
  * 
