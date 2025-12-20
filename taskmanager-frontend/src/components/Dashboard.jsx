@@ -13,19 +13,29 @@ function Dashboard({ token, user, onLogout }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [newProject, setNewProject] = useState({ title: '', description: '' });
   const [error, setError] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const pageSize = 6; // 6 projects per page
 
   useEffect(() => {
     fetchProjects();
-  }, [searchTerm]);
+  }, [searchTerm, currentPage]);
 
   const fetchProjects = async () => {
     try {
       setLoading(true);
       const response = await axios.get(`${API_URL}/projects`, {
         headers: { Authorization: `Bearer ${token}` },
-        params: { search: searchTerm, pageSize: 100 }
+        params: { 
+          search: searchTerm, 
+          page: currentPage,
+          pageSize: pageSize 
+        }
       });
       setProjects(response.data.items);
+      setTotalPages(response.data.totalPages);
+      setTotalCount(response.data.totalCount);
     } catch (err) {
       setError('Failed to fetch projects');
     } finally {
@@ -41,9 +51,10 @@ function Dashboard({ token, user, onLogout }) {
         newProject,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setProjects([response.data, ...projects]);
       setShowCreateModal(false);
       setNewProject({ title: '', description: '' });
+      setCurrentPage(1); // Go to first page to see new project
+      fetchProjects(); // Refresh the list
     } catch (err) {
       setError('Failed to create project');
     }
@@ -55,10 +66,15 @@ function Dashboard({ token, user, onLogout }) {
       await axios.delete(`${API_URL}/projects/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setProjects(projects.filter(p => p.id !== id));
+      fetchProjects(); // Refresh to update pagination
     } catch (err) {
       setError('Failed to delete project');
     }
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset to first page on search
   };
 
   return (
@@ -91,7 +107,7 @@ function Dashboard({ token, user, onLogout }) {
                 type="text"
                 placeholder="Search projects..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={handleSearchChange}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
               />
             </div>
@@ -178,6 +194,87 @@ function Dashboard({ token, user, onLogout }) {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Pagination Controls */}
+        {!loading && totalPages > 1 && (
+          <div className="mt-8 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-lg shadow">
+            <div className="flex flex-1 justify-between sm:hidden">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
+            <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm text-gray-700">
+                  Showing <span className="font-medium">{(currentPage - 1) * pageSize + 1}</span> to{' '}
+                  <span className="font-medium">
+                    {Math.min(currentPage * pageSize, totalCount)}
+                  </span>{' '}
+                  of <span className="font-medium">{totalCount}</span> projects
+                </p>
+              </div>
+              <div>
+                <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                    className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span className="sr-only">Previous</span>
+                    ‹
+                  </button>
+                  
+                  {[...Array(totalPages)].map((_, index) => {
+                    const pageNum = index + 1;
+                    // Show first page, last page, current page, and pages around current
+                    if (
+                      pageNum === 1 ||
+                      pageNum === totalPages ||
+                      (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+                    ) {
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setCurrentPage(pageNum)}
+                          className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
+                            currentPage === pageNum
+                              ? 'z-10 bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
+                              : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    } else if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
+                      return <span key={pageNum} className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700">...</span>;
+                    }
+                    return null;
+                  })}
+                  
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                    className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span className="sr-only">Next</span>
+                    ›
+                  </button>
+                </nav>
+              </div>
+            </div>
           </div>
         )}
       </main>

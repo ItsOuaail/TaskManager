@@ -14,10 +14,14 @@ function ProjectDetail({ token, onLogout }) {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [filterCompleted, setFilterCompleted] = useState(null);
   const [newTask, setNewTask] = useState({ title: '', description: '', dueDate: '' });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const pageSize = 10; // 10 tasks per page
 
   useEffect(() => {
     fetchProjectAndTasks();
-  }, [id, filterCompleted]);
+  }, [id, filterCompleted, currentPage]);
 
   const fetchProjectAndTasks = async () => {
     try {
@@ -28,11 +32,17 @@ function ProjectDetail({ token, onLogout }) {
         }),
         axios.get(`${API_URL}/projects/${id}/tasks`, {
           headers: { Authorization: `Bearer ${token}` },
-          params: { pageSize: 100, completed: filterCompleted }
+          params: { 
+            page: currentPage,
+            pageSize: pageSize, 
+            completed: filterCompleted 
+          }
         })
       ]);
       setProject(projectRes.data);
       setTasks(tasksRes.data.items);
+      setTotalPages(tasksRes.data.totalPages);
+      setTotalCount(tasksRes.data.totalCount);
     } catch (err) {
       console.error(err);
       if (err.response?.status === 404) {
@@ -44,35 +54,43 @@ function ProjectDetail({ token, onLogout }) {
   };
 
   const createTask = async (e) => {
-  e.preventDefault();
-  try {
-    const taskData = {
-      title: newTask.title,
-      description: newTask.description || null,
-      // Only include dueDate if it has a value
-      ...(newTask.dueDate && { dueDate: new Date(newTask.dueDate).toISOString() })
-    };
+    e.preventDefault();
+    try {
+      // Prepare task data - convert empty date string to null
+      const taskData = {
+        title: newTask.title.trim(),
+        description: newTask.description?.trim() || null,
+        // Send null instead of empty string for date
+        dueDate: newTask.dueDate ? new Date(newTask.dueDate).toISOString() : null
+      };
 
-    console.log('Sending task data:', taskData);
+      console.log('Creating task:', taskData);
 
-    const response = await axios.post(
-      `${API_URL}/projects/${id}/tasks`,
-      taskData,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    
-    console.log('Response:', response.data);
-    
-    setTasks([response.data, ...tasks]);
-    setShowCreateModal(false);
-    setNewTask({ title: '', description: '', dueDate: '' });
-    fetchProjectAndTasks();
-  } catch (err) {
-    console.error('Full error:', err);
-    console.error('Error response:', err.response?.data);
-    alert(`Error: ${JSON.stringify(err.response?.data)}`);
-  }
-};
+      const response = await axios.post(
+        `${API_URL}/projects/${id}/tasks`,
+        taskData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      console.log('Task created:', response.data);
+      
+      setTasks([response.data, ...tasks]);
+      setShowCreateModal(false);
+      setNewTask({ title: '', description: '', dueDate: '' });
+      setCurrentPage(1); // Go to first page
+      fetchProjectAndTasks(); // Refresh to update progress and pagination
+    } catch (err) {
+      console.error('Error creating task:', err);
+      console.error('Error details:', err.response?.data);
+      
+      const errorMessage = err.response?.data?.message 
+        || err.response?.data?.title
+        || err.response?.data?.details
+        || 'Failed to create task. Please try again.';
+      
+      alert(`Error: ${errorMessage}`);
+    }
+  };
 
   const toggleTaskCompletion = async (taskId) => {
     try {
@@ -162,7 +180,10 @@ function ProjectDetail({ token, onLogout }) {
         <div className="flex justify-between items-center mb-6">
           <div className="flex gap-2">
             <button
-              onClick={() => setFilterCompleted(null)}
+              onClick={() => {
+                setFilterCompleted(null);
+                setCurrentPage(1);
+              }}
               className={`px-4 py-2 rounded-lg transition ${
                 filterCompleted === null
                   ? 'bg-blue-600 text-white'
@@ -172,7 +193,10 @@ function ProjectDetail({ token, onLogout }) {
               All Tasks
             </button>
             <button
-              onClick={() => setFilterCompleted(false)}
+              onClick={() => {
+                setFilterCompleted(false);
+                setCurrentPage(1);
+              }}
               className={`px-4 py-2 rounded-lg transition ${
                 filterCompleted === false
                   ? 'bg-blue-600 text-white'
@@ -182,7 +206,10 @@ function ProjectDetail({ token, onLogout }) {
               Active
             </button>
             <button
-              onClick={() => setFilterCompleted(true)}
+              onClick={() => {
+                setFilterCompleted(true);
+                setCurrentPage(1);
+              }}
               className={`px-4 py-2 rounded-lg transition ${
                 filterCompleted === true
                   ? 'bg-blue-600 text-white'
@@ -265,6 +292,84 @@ function ProjectDetail({ token, onLogout }) {
             ))
           )}
         </div>
+
+        {/* Pagination Controls */}
+        {!loading && totalPages > 1 && (
+          <div className="mt-6 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 rounded-lg shadow">
+            <div className="flex flex-1 justify-between sm:hidden">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
+            <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm text-gray-700">
+                  Showing <span className="font-medium">{(currentPage - 1) * pageSize + 1}</span> to{' '}
+                  <span className="font-medium">
+                    {Math.min(currentPage * pageSize, totalCount)}
+                  </span>{' '}
+                  of <span className="font-medium">{totalCount}</span> tasks
+                </p>
+              </div>
+              <div>
+                <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                    className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    ‹
+                  </button>
+                  
+                  {[...Array(totalPages)].map((_, index) => {
+                    const pageNum = index + 1;
+                    if (
+                      pageNum === 1 ||
+                      pageNum === totalPages ||
+                      (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+                    ) {
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setCurrentPage(pageNum)}
+                          className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
+                            currentPage === pageNum
+                              ? 'z-10 bg-blue-600 text-white'
+                              : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    } else if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
+                      return <span key={pageNum} className="relative inline-flex items-center px-4 py-2 text-sm">...</span>;
+                    }
+                    return null;
+                  })}
+                  
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                    className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    ›
+                  </button>
+                </nav>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Create Task Modal */}
