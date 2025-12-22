@@ -1,21 +1,21 @@
 # Task Manager - Full Stack Application
 
-A comprehensive project and task management system built with .NET 10, React, and PostgreSQL, demonstrating Clean Architecture and modern development practices.
+> A comprehensive project and task management system built with .NET 10, React, and PostgreSQL, demonstrating Clean Architecture and modern development practices.
 
 **Demo Video:** [Watch Demo on YouTube](YOUR_VIDEO_LINK_HERE)
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)
-![React](https://img.shields.io/badge/React-18.2-blue.svg)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue.svg)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
+[![React](https://img.shields.io/badge/React-18.2-blue.svg)](https://reactjs.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue.svg)](https://www.postgresql.org/)
 
 ---
 
-## Table of Contents
+## 📋 Table of Contents
 
 - [Overview](#overview)
 - [Features](#features)
-- [Tech Stack](#tech-stack)
+- [Technologies](#technologies)
 - [Architecture](#architecture)
 - [Getting Started](#getting-started)
 - [Running the Application](#running-the-application)
@@ -26,100 +26,147 @@ A comprehensive project and task management system built with .NET 10, React, an
 
 ---
 
-## Overview
+## 🎯 Overview
 
-Task Manager is a production-ready full-stack application built for the **Hahn Software Morocco - End of Studies Internship 2026**. It showcases enterprise-level development with Clean Architecture, comprehensive testing (34+ tests, 90%+ coverage), and containerized deployment.
+Task Manager is a production-ready full-stack application demonstrating enterprise-level software development practices with Clean Architecture, comprehensive testing, and containerized deployment.
+
+**Built for:** Hahn Software Morocco - End of Studies Internship 2026
 
 ### Key Highlights
 
-- Clean Architecture with clear separation of concerns
-- JWT authentication with BCrypt password hashing
-- Real-time progress tracking with visual indicators
-- Modern, responsive UI with Tailwind CSS
-- Comprehensive unit tests (backend + frontend)
-- Full Docker support with docker-compose
+- ✨ Clean Architecture with clear separation of concerns
+- 🔐 JWT authentication with BCrypt password hashing
+- 📊 Real-time progress tracking with automatic calculation
+- 🎨 Modern UI/UX with Tailwind CSS
+- ✅ 34+ unit tests with 90%+ coverage
+- 🐳 Full Docker support with docker-compose
+- 📄 Complete API documentation with Swagger
 
 ---
 
-## Features
+## ✨ Features
 
-### Core Functionality
-- **Authentication:** Secure registration/login with JWT tokens
-- **Project Management:** CRUD operations with search and pagination
-- **Task Management:** Create, update, toggle, and delete tasks with due dates
-- **Progress Tracking:** Automatic calculation and visual progress bars
-- **Filtering:** Filter tasks by status (All, Active, Completed)
-- **Responsive Design:** Works seamlessly on mobile, tablet, and desktop
+### Authentication & Security
+- User registration with email validation
+- Secure login with JWT token authentication
+- BCrypt password hashing
+- Token-based authorization on protected routes
+
+### Project Management
+- Create, read, update, and delete projects
+- Search projects by title or description
+- Pagination (6 projects per page)
+- Real-time progress tracking with visual progress bars
+
+### Task Management
+- Add tasks with title, description, and due date
+- Toggle task completion status
+- Filter tasks by status (All, Active, Completed)
+- Pagination (10 tasks per page)
+- Search tasks within projects
+
+### User Experience
+- Responsive design (mobile, tablet, desktop)
+- Loading states and smooth transitions
+- Error handling with clear feedback
+- Intuitive navigation
 
 ---
 
-## Tech Stack
+## 🛠 Technologies
 
 ### Backend
-- **.NET 10** with ASP.NET Core Web API
-- **Entity Framework Core 8.0** + PostgreSQL 15
-- **JWT Authentication** with BCrypt password hashing
-- **xUnit** + **Moq** for testing
+- .NET 10 & ASP.NET Core Web API
+- Entity Framework Core 8.0
+- PostgreSQL 15
+- JWT Bearer Authentication
+- BCrypt.Net for password hashing
+- Swagger/OpenAPI
+- xUnit & Moq for testing
 
 ### Frontend
-- **React 18** with React Router v6
-- **Axios** for API communication
-- **Tailwind CSS** for styling
-- **Vite** for fast development
-- **Vitest** for testing
+- React 18 with Hooks
+- React Router v6
+- Axios for HTTP requests
+- Tailwind CSS
+- Lucide React icons
+- Vite build tool
+- Vitest for testing
 
 ### DevOps
-- **Docker** & **Docker Compose**
-- **Swagger/OpenAPI** for API documentation
+- Docker & Docker Compose
+- Git version control
 
 ---
 
-## Architecture
+## 🏗 Architecture
 
 This project follows **Clean Architecture** principles:
 
 ```
-┌─────────────────────────────────────┐
-│   API Layer (Controllers)           │
-├─────────────────────────────────────┤
-│   Application Layer (Services, DTOs)│
-├─────────────────────────────────────┤
-│   Domain Layer (Entities, Logic)    │
-├─────────────────────────────────────┤
-│   Infrastructure (DB, Repositories) │
-└─────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                        Presentation Layer                    │
+│                     (React Frontend + API)                   │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+┌────────────────────────▼────────────────────────────────────┐
+│                     Application Layer                        │
+│              (Business Logic, DTOs, Interfaces)              │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+┌────────────────────────▼────────────────────────────────────┐
+│                      Domain Layer                            │
+│            (Entities, Business Rules, Core Logic)            │
+└──────────────────────────────────────────────────────────────┘
+                         ▲
+┌────────────────────────┴────────────────────────────────────┐
+│                   Infrastructure Layer                       │
+│        (Database, External Services, Repositories)           │
+└──────────────────────────────────────────────────────────────┘
 ```
 
-**Benefits:**
-- Independent testability of each layer
-- Easy to maintain and extend
-- Flexibility to swap implementations
-- Clear separation of concerns
+### Layer Responsibilities
+
+- **Domain:** Core entities (User, Project, Task) and business logic
+- **Application:** Use cases, DTOs, service interfaces, validation
+- **Infrastructure:** EF Core, repositories, external services (JWT, BCrypt)
+- **API:** HTTP endpoints, middleware, Swagger configuration
 
 ---
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 
-- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
-- [Node.js 18+](https://nodejs.org/)
-- [PostgreSQL 15+](https://www.postgresql.org/download/)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop) (optional)
+- Visual Studio 2022 (17.8+) with ASP.NET workload
+- .NET 10 SDK
+- Node.js 18+ and npm
+- PostgreSQL 15+
+- Docker Desktop (optional)
+
+**Verify installations:**
+
+```bash
+dotnet --version        # Should show 10.x.x
+node --version          # Should show 18.x.x or higher
+psql --version          # Should show 15.x
+```
 
 ### Installation
 
 #### 1. Clone Repository
+
 ```bash
 git clone https://github.com/YOUR_USERNAME/task-manager.git
 cd task-manager
 ```
 
-#### 2. Setup Backend
+#### 2. Backend Setup
 
 **Configure Database:**
 
 Update `TaskManager.API/appsettings.json`:
+
 ```json
 {
   "ConnectionStrings": {
@@ -133,44 +180,81 @@ Update `TaskManager.API/appsettings.json`:
 }
 ```
 
-**Create Database and Apply Migrations:**
-```bash
-# Create database
-psql -U postgres -c "CREATE DATABASE taskmanager;"
+**Create Database:**
 
-# Apply migrations
-cd TaskManager.API
-dotnet ef database update --project ../TaskManager.Infrastructure
+```bash
+psql -U postgres
+CREATE DATABASE taskmanager;
+\q
 ```
 
-#### 3. Setup Frontend
+**Apply Migrations:**
+
+In Visual Studio Package Manager Console:
+
+```powershell
+Add-Migration InitialCreate -Project TaskManager.Infrastructure
+Update-Database -Project TaskManager.Infrastructure
+```
+
+Or using .NET CLI:
+
+```bash
+cd TaskManager.API
+dotnet ef migrations add InitialCreate --project ../TaskManager.Infrastructure
+dotnet ef database update
+```
+
+#### 3. Frontend Setup
+
 ```bash
 cd taskmanager-frontend
 npm install
 ```
 
+**Optional - Configure API URL:**
+
+Create `.env` file:
+
+```env
+VITE_API_URL=http://localhost:5000/api
+```
+
 ---
 
-## Running the Application
+## ▶️ Running the Application
 
 ### Option 1: Local Development
 
 **Start Backend:**
+
+In Visual Studio 2022:
+1. Set `TaskManager.API` as startup project
+2. Press **F5**
+
+Or via CLI:
 ```bash
 cd TaskManager.API
 dotnet run
-# Backend: http://localhost:5000
-# Swagger: http://localhost:5000/swagger
 ```
 
+Backend runs on: `http://localhost:5000`
+
 **Start Frontend:**
+
 ```bash
 cd taskmanager-frontend
 npm run dev
-# Frontend: http://localhost:3000
 ```
 
-### Option 2: Docker (Recommended)
+Frontend runs on: `http://localhost:3000`
+
+**Access Points:**
+- Frontend: http://localhost:3000
+- API: http://localhost:5000
+- Swagger: http://localhost:5000/swagger
+
+### Option 2: Docker
 
 ```bash
 # Start all services
@@ -183,27 +267,33 @@ docker-compose logs -f
 docker-compose down
 ```
 
-**Access:**
+**Access Points:**
 - Frontend: http://localhost:3000
 - API: http://localhost:5000
 - Swagger: http://localhost:5000/swagger
-
-### Test Credentials
-
-```
-Email: admin@test.com
-Password: password123
-```
-
-Or register your own account.
+- Database: localhost:5432
 
 ---
 
-## API Documentation
+## 🔑 Test Credentials
+
+Pre-seeded users:
+
+**Admin:**
+- Email: `admin@test.com`
+- Password: `password123`
+
+**User:**
+- Email: `user@test.com`
+- Password: `password123`
+
+---
+
+## 📖 API Documentation
 
 ### Authentication
 
-**Register:**
+#### Register
 ```http
 POST /api/auth/register
 Content-Type: application/json
@@ -215,7 +305,7 @@ Content-Type: application/json
 }
 ```
 
-**Login:**
+#### Login
 ```http
 POST /api/auth/login
 Content-Type: application/json
@@ -230,12 +320,17 @@ Content-Type: application/json
 
 All endpoints require `Authorization: Bearer {token}` header.
 
-**Get Projects (Paginated):**
+#### Get All Projects
 ```http
 GET /api/projects?page=1&pageSize=6&search=term
 ```
 
-**Create Project:**
+#### Get Project Details
+```http
+GET /api/projects/{id}
+```
+
+#### Create Project
 ```http
 POST /api/projects
 Content-Type: application/json
@@ -246,29 +341,30 @@ Content-Type: application/json
 }
 ```
 
-**Get Project Details:**
-```http
-GET /api/projects/{id}
-```
-
-**Update Project:**
+#### Update Project
 ```http
 PUT /api/projects/{id}
+Content-Type: application/json
+
+{
+  "title": "Updated Title",
+  "description": "Updated description"
+}
 ```
 
-**Delete Project:**
+#### Delete Project
 ```http
 DELETE /api/projects/{id}
 ```
 
 ### Tasks
 
-**Get Tasks (Filtered):**
+#### Get Tasks
 ```http
 GET /api/projects/{projectId}/tasks?page=1&pageSize=10&completed=false
 ```
 
-**Create Task:**
+#### Create Task
 ```http
 POST /api/projects/{projectId}/tasks
 Content-Type: application/json
@@ -280,160 +376,165 @@ Content-Type: application/json
 }
 ```
 
-**Toggle Task Completion:**
+#### Toggle Task Completion
 ```http
 PATCH /api/projects/{projectId}/tasks/{id}/toggle
 ```
 
-**Delete Task:**
+#### Delete Task
 ```http
 DELETE /api/projects/{projectId}/tasks/{id}
 ```
 
-**Full API Documentation:** Visit http://localhost:5000/swagger when running.
+**Interactive Documentation:** Visit http://localhost:5000/swagger when backend is running.
 
 ---
 
-## Testing
+## 🧪 Testing
 
-### Backend Tests (20 tests)
+### Backend Tests (xUnit + Moq)
 
 ```bash
+# Visual Studio
+Test → Run All Tests (Ctrl+R, A)
+
+# CLI
 cd TaskManager.Tests
 dotnet test
 ```
 
 **Coverage:**
-- ProjectService: 15 tests (CRUD, pagination, authorization)
-- TaskService: 5 tests (create, toggle, delete, filters)
+- ProjectService: 15 tests
+- TaskService: 5 tests
+- Total: 20+ tests
 
-### Frontend Tests (14 tests)
+### Frontend Tests (Vitest)
 
 ```bash
 cd taskmanager-frontend
+
+# Watch mode
 npm test
+
+# Run once
+npm run test:run
 ```
 
 **Coverage:**
 - Login Component: 6 tests
 - Dashboard Component: 8 tests
+- Total: 14+ tests
 
 ---
 
-## Docker Deployment
+## 🐳 Docker Deployment
 
-The application includes complete Docker setup with three services: PostgreSQL, API, and Frontend.
+### Commands
 
-**Start all services:**
 ```bash
+# Start all services
 docker-compose up -d --build
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+
+# Stop and remove data
+docker-compose down -v
 ```
 
-**Benefits:**
-- Consistent environment across development and production
-- One-command deployment
-- Service isolation
-- Easy scaling
+### Services
 
-**Docker images:**
-- Backend: Multi-stage .NET build (~210MB)
-- Frontend: Multi-stage Node + Nginx build (~40MB)
+- **postgres:** PostgreSQL database
+- **api:** .NET backend
+- **frontend:** React application
 
 ---
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 TaskManager/
-├── TaskManager.Domain/              # Entities (User, Project, Task)
-├── TaskManager.Application/         # DTOs, Interfaces, Business Logic
-├── TaskManager.Infrastructure/      # EF Core, Repositories, Services
-├── TaskManager.API/                 # Controllers, Startup Configuration
-├── TaskManager.Tests/               # Unit Tests (xUnit + Moq)
-├── taskmanager-frontend/            # React Application
-│   ├── src/components/              # React Components + Tests
-│   ├── Dockerfile
-│   └── nginx.conf
-├── docker-compose.yml
-└── README.md
+├── TaskManager.Domain/              # Core entities
+├── TaskManager.Application/         # Business logic, DTOs, interfaces
+├── TaskManager.Infrastructure/      # Data access, repositories, services
+├── TaskManager.API/                 # Web API, controllers
+├── TaskManager.Tests/               # Unit tests
+└── taskmanager-frontend/            # React application
+    ├── src/
+    │   ├── components/
+    │   ├── App.jsx
+    │   └── main.jsx
+    └── Dockerfile
 ```
 
 ---
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
-### Database Connection Issues
-```bash
-# Verify PostgreSQL is running
-systemctl status postgresql  # Linux
-# Or check Services on Windows
+### Database Connection Failed
 
-# Test connection
-psql -U postgres -c "\l"
-```
+**Check:**
+1. PostgreSQL is running
+2. Connection string in `appsettings.json`
+3. Database exists
+4. Firewall allows port 5432
+
+### CORS Error
+
+**Check:**
+1. Backend running on port 5000
+2. `Program.cs` has `app.UseCors("AllowReactApp")`
+3. Frontend URL matches CORS policy
 
 ### Port Already in Use
+
+**Windows:**
 ```bash
-# Windows
 netstat -ano | findstr :5000
 taskkill /PID <PID> /F
+```
 
-# Linux/Mac
+**Linux/Mac:**
+```bash
 lsof -i :5000
 kill -9 <PID>
 ```
 
 ### Docker Container Won't Start
+
 ```bash
 # Check logs
 docker-compose logs api
 
-# Rebuild from scratch
+# Rebuild
 docker-compose down -v
 docker-compose build --no-cache
 docker-compose up -d
 ```
 
-### CORS Errors
-Ensure backend `Program.cs` includes:
-```csharp
-app.UseCors("AllowReactApp");
-```
+---
+
+## 🎥 Demo Video
+
+**Watch:** [Task Manager Demo - YouTube](YOUR_VIDEO_LINK_HERE)
+
+**Duration:** 1:47 | **Language:** English
+
+### Content Overview
+
+1. Introduction (0:00-0:10)
+2. Authentication (0:10-0:20)
+3. Dashboard Features (0:20-0:45)
+4. Task Management (0:45-1:10)
+5. Technical Architecture (1:10-1:35)
+6. Conclusion (1:35-1:47)
 
 ---
 
-## Key Technical Decisions
-
-1. **Clean Architecture:** Ensures testability, maintainability, and scalability
-2. **JWT Authentication:** Stateless, scalable, mobile-friendly
-3. **Repository Pattern:** Abstracts database access for better testing
-4. **Server-Side Pagination:** Handles large datasets efficiently
-5. **Docker Containerization:** Consistent deployment across environments
-6. **Comprehensive Testing:** Ensures code quality and confidence in refactoring
-
----
-
-## Future Enhancements
-
-- [ ] Email verification and password reset
-- [ ] Real-time updates with SignalR
-- [ ] Task comments and file attachments
-- [ ] Project collaboration (multiple users)
-- [ ] Export to PDF
-- [ ] Dark mode
-- [ ] CI/CD pipeline
-
----
-
-## Demo Video
-
-**Watch the demo:** [Task Manager Demo - YouTube](YOUR_VIDEO_LINK_HERE)
-
-*Duration: 1:47 | Covers: Authentication, Dashboard, Task Management, Architecture, and Docker Deployment*
-
----
-
-## Author
+## 👤 Author
 
 **Ouaail [Your Last Name]**
 
@@ -444,17 +545,20 @@ app.UseCors("AllowReactApp");
 
 ---
 
-## Acknowledgments
+## 🙏 Acknowledgments
 
-Built with ❤️ for **Hahn Software Morocco** - End of Studies Internship 2026
-
-Special thanks to the .NET and React communities for excellent documentation and tools.
+- **Hahn Software Morocco** - Internship opportunity
+- **.NET Community** - Documentation and tools
+- **React Community** - Ecosystem
+- **Open Source Contributors** - Libraries used in this project
 
 ---
 
 <div align="center">
 
-⭐ If you found this project helpful, please give it a star!
+**Built with ❤️ for Hahn Software Morocco**
+
+⭐ Star this project if you found it interesting!
 
 [Report Bug](https://github.com/your-username/task-manager/issues) · [Request Feature](https://github.com/your-username/task-manager/issues)
 
