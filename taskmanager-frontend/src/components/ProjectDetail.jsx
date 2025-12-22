@@ -1,23 +1,30 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { ArrowLeft, Plus, Check, X, Trash2, Calendar, CheckCircle2, Circle } from 'lucide-react';
+import { 
+  ArrowLeft, 
+  Plus, 
+  CheckCircle2, 
+  Circle, 
+  Trash2, 
+  Calendar 
+} from 'lucide-react';
 
 const API_URL = 'http://localhost:5290/api';
 
-function ProjectDetail({ token, onLogout }) {
+function ProjectDetail({ token }) {
   const { id } = useParams();
   const navigate = useNavigate();
   const [project, setProject] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [filterCompleted, setFilterCompleted] = useState(null);
+  const [filterCompleted, setFilterCompleted] = useState(null); // null = all, true = completed, false = active
   const [newTask, setNewTask] = useState({ title: '', description: '', dueDate: '' });
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-  const pageSize = 10; // 10 tasks per page
+  const pageSize = 10;
 
   useEffect(() => {
     fetchProjectAndTasks();
@@ -34,15 +41,16 @@ function ProjectDetail({ token, onLogout }) {
           headers: { Authorization: `Bearer ${token}` },
           params: { 
             page: currentPage,
-            pageSize: pageSize, 
+            pageSize,
             completed: filterCompleted 
           }
         })
       ]);
+
       setProject(projectRes.data);
-      setTasks(tasksRes.data.items);
-      setTotalPages(tasksRes.data.totalPages);
-      setTotalCount(tasksRes.data.totalCount);
+      setTasks(tasksRes.data.items || []);
+      setTotalPages(tasksRes.data.totalPages || 1);
+      setTotalCount(tasksRes.data.totalCount || 0);
     } catch (err) {
       console.error(err);
       if (err.response?.status === 404) {
@@ -55,40 +63,28 @@ function ProjectDetail({ token, onLogout }) {
 
   const createTask = async (e) => {
     e.preventDefault();
+    if (!newTask.title.trim()) return;
+
     try {
-      // Prepare task data - convert empty date string to null
       const taskData = {
         title: newTask.title.trim(),
-        description: newTask.description?.trim() || null,
-        // Send null instead of empty string for date
+        description: newTask.description.trim() || null,
         dueDate: newTask.dueDate ? new Date(newTask.dueDate).toISOString() : null
       };
-
-      console.log('Creating task:', taskData);
 
       const response = await axios.post(
         `${API_URL}/projects/${id}/tasks`,
         taskData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      
-      console.log('Task created:', response.data);
-      
-      setTasks([response.data, ...tasks]);
+
       setShowCreateModal(false);
       setNewTask({ title: '', description: '', dueDate: '' });
-      setCurrentPage(1); // Go to first page
-      fetchProjectAndTasks(); // Refresh to update progress and pagination
+      setCurrentPage(1);
+      fetchProjectAndTasks(); // Refresh progress & list
     } catch (err) {
-      console.error('Error creating task:', err);
-      console.error('Error details:', err.response?.data);
-      
-      const errorMessage = err.response?.data?.message 
-        || err.response?.data?.title
-        || err.response?.data?.details
-        || 'Failed to create task. Please try again.';
-      
-      alert(`Error: ${errorMessage}`);
+      console.error(err);
+      alert('Failed to create task. Please try again.');
     }
   };
 
@@ -100,20 +96,20 @@ function ProjectDetail({ token, onLogout }) {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setTasks(tasks.map(t => t.id === taskId ? response.data : t));
-      fetchProjectAndTasks(); // Refresh to update progress
+      fetchProjectAndTasks(); // Update project progress
     } catch (err) {
       console.error(err);
     }
   };
 
   const deleteTask = async (taskId) => {
-    if (!confirm('Are you sure you want to delete this task?')) return;
+    if (!window.confirm('Delete this task permanently? This cannot be undone.')) return;
+
     try {
       await axios.delete(`${API_URL}/projects/${id}/tasks/${taskId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setTasks(tasks.filter(t => t.id !== taskId));
-      fetchProjectAndTasks(); // Refresh to update progress
+      fetchProjectAndTasks();
     } catch (err) {
       console.error(err);
     }
@@ -122,106 +118,116 @@ function ProjectDetail({ token, onLogout }) {
   const formatDate = (dateString) => {
     if (!dateString) return null;
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const taskDate = new Date(date);
+    taskDate.setHours(0, 0, 0, 0);
+
+    const isOverdue = taskDate < today && !project?.tasks?.find(t => t.id === taskDate)?.isCompleted;
+
+    return {
+      formatted: date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric', 
+        year: taskDate.getFullYear() !== today.getFullYear() ? 'numeric' : undefined 
+      }),
+      isOverdue: !isOverdue ? false : true // Simplified for clarity
+    };
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-indigo-600"></div>
       </div>
     );
   }
 
+  if (!project) return null;
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-4"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            Back to Projects
-          </button>
-          <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-800">{project?.title}</h1>
-              {project?.description && (
-                <p className="text-gray-600 mt-2">{project.description}</p>
-              )}
-            </div>
+      <header className="bg-white shadow-sm border-b border-gray-200 fixed top-0 left-0 right-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span className="font-medium">Back to Projects</span>
+            </button>
+            <h1 className="text-xl font-bold text-indigo-700 hidden sm:block">ProTask</h1>
           </div>
         </div>
       </header>
 
-      {/* Progress Section */}
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-800">Project Progress</h2>
-            <span className="text-2xl font-bold text-blue-600">
-              {project?.progressPercentage}%
-            </span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
-            <div
-              className="bg-blue-600 h-3 rounded-full transition-all"
-              style={{ width: `${project?.progressPercentage}%` }}
-            ></div>
-          </div>
-          <p className="text-sm text-gray-600">
-            {project?.completedTasks} of {project?.totalTasks} tasks completed
-          </p>
+      {/* Main Content */}
+      <main className="pt-20 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        {/* Project Title & Description */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-3">{project.title}</h1>
+          {project.description && (
+            <p className="text-lg text-gray-600 max-w-3xl">{project.description}</p>
+          )}
         </div>
 
-        {/* Actions Bar */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex gap-2">
-            <button
-              onClick={() => {
-                setFilterCompleted(null);
-                setCurrentPage(1);
-              }}
-              className={`px-4 py-2 rounded-lg transition ${
-                filterCompleted === null
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-700 border border-gray-300'
-              }`}
-            >
-              All Tasks
-            </button>
-            <button
-              onClick={() => {
-                setFilterCompleted(false);
-                setCurrentPage(1);
-              }}
-              className={`px-4 py-2 rounded-lg transition ${
-                filterCompleted === false
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-700 border border-gray-300'
-              }`}
-            >
-              Active
-            </button>
-            <button
-              onClick={() => {
-                setFilterCompleted(true);
-                setCurrentPage(1);
-              }}
-              className={`px-4 py-2 rounded-lg transition ${
-                filterCompleted === true
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-700 border border-gray-300'
-              }`}
-            >
-              Completed
-            </button>
+        {/* Progress Card */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 mb-10">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">Project Progress</h2>
+            <div className="text-right">
+              <p className="text-4xl font-bold text-indigo-600">{project.progressPercentage}%</p>
+              <p className="text-sm text-gray-600 mt-1">
+                {project.completedTasks} of {project.totalTasks} tasks completed
+              </p>
+            </div>
           </div>
+          <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-700 ${
+                project.progressPercentage === 100 ? 'bg-green-500' : 'bg-indigo-600'
+              }`}
+              style={{ width: `${project.progressPercentage}%` }}
+            />
+          </div>
+          {project.progressPercentage === 100 && project.totalTasks > 0 && (
+            <p className="mt-4 text-green-600 font-medium flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5" />
+              Project Completed!
+            </p>
+          )}
+        </div>
+
+        {/* Filters & Add Task */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-8">
+          <div className="flex gap-3">
+            {[
+              { label: 'All Tasks', value: null },
+              { label: 'Active', value: false },
+              { label: 'Completed', value: true }
+            ].map(({ label, value }) => (
+              <button
+                key={value ?? 'all'}
+                onClick={() => {
+                  setFilterCompleted(value);
+                  setCurrentPage(1);
+                }}
+                className={`px-6 py-3 rounded-xl font-medium transition ${
+                  filterCompleted === value
+                    ? 'bg-indigo-600 text-white shadow-md'
+                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
           <button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 shadow-md transition"
           >
             <Plus className="w-5 h-5" />
             Add Task
@@ -229,204 +235,195 @@ function ProjectDetail({ token, onLogout }) {
         </div>
 
         {/* Tasks List */}
-        <div className="space-y-3">
-          {tasks.length === 0 ? (
-            <div className="bg-white rounded-lg shadow p-12 text-center">
-              <Circle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">No tasks yet</h3>
-              <p className="text-gray-500 mb-4">Add your first task to get started</p>
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-              >
-                Add Task
-              </button>
-            </div>
-          ) : (
-            tasks.map((task) => (
-              <div
-                key={task.id}
-                className={`bg-white rounded-lg shadow p-4 flex items-start gap-4 ${
-                  task.isCompleted ? 'opacity-75' : ''
-                }`}
-              >
-                <button
-                  onClick={() => toggleTaskCompletion(task.id)}
-                  className="mt-1 flex-shrink-0"
-                >
-                  {task.isCompleted ? (
-                    <CheckCircle2 className="w-6 h-6 text-green-600" />
-                  ) : (
-                    <Circle className="w-6 h-6 text-gray-400 hover:text-blue-600 transition" />
-                  )}
-                </button>
+        {tasks.length === 0 ? (
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-20 text-center">
+            <Circle className="w-20 h-20 text-gray-300 mx-auto mb-6" />
+            <h3 className="text-2xl font-semibold text-gray-800 mb-3">
+              {filterCompleted === null ? 'No tasks yet' : `No ${filterCompleted ? 'completed' : 'active'} tasks`}
+            </h3>
+            <p className="text-gray-600 mb-8 max-w-md mx-auto">
+              {filterCompleted === null 
+                ? 'Start by adding your first task to this project.'
+                : 'Try switching filters or adding a new task.'}
+            </p>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition shadow-md"
+            >
+              Add Your First Task
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {tasks.map((task) => {
+              const dueInfo = task.dueDate ? formatDate(task.dueDate) : null;
+              const isOverdue = dueInfo?.isOverdue && !task.isCompleted;
 
-                <div className="flex-1 min-w-0">
-                  <h3
-                    className={`text-lg font-medium ${
-                      task.isCompleted
-                        ? 'line-through text-gray-500'
-                        : 'text-gray-800'
-                    }`}
+              return (
+                <div
+                  key={task.id}
+                  className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 p-6 flex items-start gap-5 group"
+                >
+                  <button
+                    onClick={() => toggleTaskCompletion(task.id)}
+                    className="mt-1 flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-full"
+                    aria-label={task.isCompleted ? 'Mark as incomplete' : 'Mark as complete'}
                   >
-                    {task.title}
-                  </h3>
-                  {task.description && (
-                    <p className="text-gray-600 text-sm mt-1">{task.description}</p>
-                  )}
-                  {task.dueDate && (
-                    <div className="flex items-center gap-2 mt-2 text-sm text-gray-500">
-                      <Calendar className="w-4 h-4" />
-                      <span>Due: {formatDate(task.dueDate)}</span>
-                    </div>
-                  )}
+                    {task.isCompleted ? (
+                      <CheckCircle2 className="w-7 h-7 text-green-600" />
+                    ) : (
+                      <Circle className="w-7 h-7 text-gray-400 hover:text-indigo-600 transition" />
+                    )}
+                  </button>
+
+                  <div className="flex-1 min-w-0">
+                    <h3 className={`text-xl font-medium ${
+                      task.isCompleted 
+                        ? 'line-through text-gray-500' 
+                        : 'text-gray-900'
+                    }`}>
+                      {task.title}
+                    </h3>
+
+                    {task.description && (
+                      <p className="text-gray-600 mt-2 leading-relaxed">
+                        {task.description}
+                      </p>
+                    )}
+
+                    {dueInfo && (
+                      <div className={`flex items-center gap-2 mt-3 text-sm font-medium ${
+                        isOverdue ? 'text-red-600' : 'text-gray-600'
+                      }`}>
+                        <Calendar className="w-4 h-4" />
+                        <span>
+                          Due {dueInfo.formatted}
+                          {isOverdue && ' • Overdue'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => deleteTask(task.id)}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity p-2 text-red-500 hover:bg-red-50 rounded-lg"
+                    aria-label="Delete task"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
                 </div>
+              );
+            })}
+          </div>
+        )}
 
-                <button
-                  onClick={() => deleteTask(task.id)}
-                  className="text-red-500 hover:text-red-700 p-1 flex-shrink-0"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
-              </div>
-            ))
-          )}
-        </div>
-
-        {/* Pagination Controls */}
-        {!loading && totalPages > 1 && (
-          <div className="mt-6 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 rounded-lg shadow">
-            <div className="flex flex-1 justify-between sm:hidden">
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-12 flex justify-center">
+            <nav className="flex items-center gap-2">
               <button
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-5 py-3 text-sm font-medium bg-white border border-gray-300 rounded-xl hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
               >
                 Previous
               </button>
+
+              <div className="flex gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`px-4 py-3 text-sm font-medium rounded-xl transition ${
+                      currentPage === page
+                        ? 'bg-indigo-600 text-white'
+                        : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+              </div>
+
               <button
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-5 py-3 text-sm font-medium bg-white border border-gray-300 rounded-xl hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
               >
                 Next
               </button>
-            </div>
-            <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm text-gray-700">
-                  Showing <span className="font-medium">{(currentPage - 1) * pageSize + 1}</span> to{' '}
-                  <span className="font-medium">
-                    {Math.min(currentPage * pageSize, totalCount)}
-                  </span>{' '}
-                  of <span className="font-medium">{totalCount}</span> tasks
-                </p>
-              </div>
-              <div>
-                <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm">
-                  <button
-                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                    disabled={currentPage === 1}
-                    className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    ‹
-                  </button>
-                  
-                  {[...Array(totalPages)].map((_, index) => {
-                    const pageNum = index + 1;
-                    if (
-                      pageNum === 1 ||
-                      pageNum === totalPages ||
-                      (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
-                    ) {
-                      return (
-                        <button
-                          key={pageNum}
-                          onClick={() => setCurrentPage(pageNum)}
-                          className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
-                            currentPage === pageNum
-                              ? 'z-10 bg-blue-600 text-white'
-                              : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50'
-                          }`}
-                        >
-                          {pageNum}
-                        </button>
-                      );
-                    } else if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
-                      return <span key={pageNum} className="relative inline-flex items-center px-4 py-2 text-sm">...</span>;
-                    }
-                    return null;
-                  })}
-                  
-                  <button
-                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                    disabled={currentPage === totalPages}
-                    className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    ›
-                  </button>
-                </nav>
-              </div>
-            </div>
+            </nav>
           </div>
         )}
-      </div>
+      </main>
 
       {/* Create Task Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Create New Task</h2>
-            <form onSubmit={createTask} className="space-y-4">
+        <div 
+          className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+          onClick={() => setShowCreateModal(false)}
+        >
+          <div 
+            className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-lg"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Add New Task</h2>
+            <form onSubmit={createTask} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Task Title *
+                <label htmlFor="task-title" className="block text-sm font-medium text-gray-700 mb-2">
+                  Task Title <span className="text-red-500">*</span>
                 </label>
                 <input
+                  id="task-title"
                   type="text"
+                  required
                   value={newTask.title}
                   onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                  placeholder="Enter task title"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                  placeholder="e.g., Design homepage mockup"
                 />
               </div>
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description
+                <label htmlFor="task-desc" className="block text-sm font-medium text-gray-700 mb-2">
+                  Description <span className="text-gray-500">(optional)</span>
                 </label>
                 <textarea
+                  id="task-desc"
+                  rows={4}
                   value={newTask.description}
                   onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                  rows="3"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none"
-                  placeholder="Enter task description (optional)"
-                ></textarea>
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none transition"
+                  placeholder="Add details about what needs to be done..."
+                />
               </div>
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Due Date
+                <label htmlFor="due-date" className="block text-sm font-medium text-gray-700 mb-2">
+                  Due Date <span className="text-gray-500">(optional)</span>
                 </label>
                 <input
+                  id="due-date"
                   type="date"
                   value={newTask.dueDate}
                   onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
                 />
               </div>
-              <div className="flex gap-3">
+
+              <div className="flex gap-4 pt-4">
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+                  className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                  className="flex-1 px-6 py-3 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 shadow-md transition"
                 >
-                  Create
+                  Create Task
                 </button>
               </div>
             </form>
