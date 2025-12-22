@@ -38,7 +38,7 @@ Task Manager is a production-ready full-stack application demonstrating enterpri
 - 🔐 JWT authentication with BCrypt password hashing
 - 📊 Real-time progress tracking with automatic calculation
 - 🎨 Modern UI/UX with Tailwind CSS
-- ✅ 34+ unit tests with 90%+ coverage
+- ✅ Unit tests with 90%+ coverage
 - 🐳 Full Docker support with docker-compose
 - 📄 Complete API documentation with Swagger
 
