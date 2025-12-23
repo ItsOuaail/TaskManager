@@ -157,8 +157,8 @@ psql --version          # Should show 15.x
 #### 1. Clone Repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/task-manager.git
-cd task-manager
+git clone https://github.com/ItsOuaail/TaskManager.git
+cd TaskManager
 ```
 
 #### 2. Backend Setup
@@ -217,7 +217,7 @@ npm install
 Create `.env` file:
 
 ```env
-VITE_API_URL=http://localhost:5000/api
+VITE_API_URL=http://localhost:5290/api
 ```
 
 ---
@@ -238,7 +238,7 @@ cd TaskManager.API
 dotnet run
 ```
 
-Backend runs on: `http://localhost:5000`
+Backend runs on: `http://localhost:5290`
 
 **Start Frontend:**
 
@@ -247,12 +247,12 @@ cd taskmanager-frontend
 npm run dev
 ```
 
-Frontend runs on: `http://localhost:3000`
+Frontend runs on: `http://localhost:5173`
 
 **Access Points:**
-- Frontend: http://localhost:3000
-- API: http://localhost:5000
-- Swagger: http://localhost:5000/swagger
+- Frontend: http://localhost:5173
+- API: http://localhost:5290
+- Swagger: http://localhost:5290/swagger
 
 ### Option 2: Docker
 
@@ -268,25 +268,19 @@ docker-compose down
 ```
 
 **Access Points:**
-- Frontend: http://localhost:3000
-- API: http://localhost:5000
-- Swagger: http://localhost:5000/swagger
+- Frontend: http://localhost:5173
+- API: http://localhost:5290
+- Swagger: http://localhost:5290/swagger
 - Database: localhost:5432
 
 ---
 
 ## 🔑 Test Credentials
 
-Pre-seeded users:
-
-**Admin:**
-- Email: `admin@test.com`
-- Password: `password123`
-
 **User:**
 - Email: `user@test.com`
 - Password: `password123`
-
+ Or create yout account 
 ---
 
 ## 📖 API Documentation
@@ -386,7 +380,7 @@ PATCH /api/projects/{projectId}/tasks/{id}/toggle
 DELETE /api/projects/{projectId}/tasks/{id}
 ```
 
-**Interactive Documentation:** Visit http://localhost:5000/swagger when backend is running.
+**Interactive Documentation:** Visit http://localhost:5290/swagger when backend is running.
 
 ---
 
@@ -462,7 +456,7 @@ TaskManager/
 ├── TaskManager.Infrastructure/      # Data access, repositories, services
 ├── TaskManager.API/                 # Web API, controllers
 ├── TaskManager.Tests/               # Unit tests
-└── taskmanager-frontend/            # React application
+└ taskmanager-frontend/            # React application
     ├── src/
     │   ├── components/
     │   ├── App.jsx
@@ -485,7 +479,7 @@ TaskManager/
 ### CORS Error
 
 **Check:**
-1. Backend running on port 5000
+1. Backend running on port 5290
 2. `Program.cs` has `app.UseCors("AllowReactApp")`
 3. Frontend URL matches CORS policy
 
@@ -493,13 +487,13 @@ TaskManager/
 
 **Windows:**
 ```bash
-netstat -ano | findstr :5000
+netstat -ano | findstr :5290
 taskkill /PID <PID> /F
 ```
 
 **Linux/Mac:**
 ```bash
-lsof -i :5000
+lsof -i :5290
 kill -9 <PID>
 ```
 
