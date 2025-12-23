@@ -2,7 +2,7 @@
 
 > A comprehensive project and task management system built with .NET 10, React, and PostgreSQL, demonstrating Clean Architecture and modern development practices.
 
-**Demo Video:** [Watch Demo on YouTube](YOUR_VIDEO_LINK_HERE)
+**Demo Video:** [Watch Demo on YouTube](https://youtu.be/TwJMXxNWE3Q)
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
@@ -280,7 +280,7 @@ docker-compose down
 **User:**
 - Email: `user@test.com`
 - Password: `password123`
- Or create yout account 
+ Or create your owb account 
 ---
 
 ## 📖 API Documentation
@@ -513,29 +513,21 @@ docker-compose up -d
 
 ## 🎥 Demo Video
 
-**Watch:** [Task Manager Demo - YouTube](YOUR_VIDEO_LINK_HERE)
+**Watch:** [Task Manager Demo - YouTube](https://youtu.be/TwJMXxNWE3Q)
 
-**Duration:** 1:47 | **Language:** English
+**Duration:** 1:44 | **Language:** English
 
-### Content Overview
-
-1. Introduction (0:00-0:10)
-2. Authentication (0:10-0:20)
-3. Dashboard Features (0:20-0:45)
-4. Task Management (0:45-1:10)
-5. Technical Architecture (1:10-1:35)
-6. Conclusion (1:35-1:47)
 
 ---
 
 ## 👤 Author
 
-**Ouaail [Your Last Name]**
+**Ouaail EL AOUAD**
 
-- GitHub: [@your-username](https://github.com/your-username)
-- LinkedIn: [Your Profile](https://linkedin.com/in/your-profile)
-- Email: your.email@example.com
-- Location: Tangier, Morocco
+- GitHub: [@ItsOuaail](https://github.com/ItsOuaail)
+- LinkedIn: [Ouaail EL AOUAD](https://www.linkedin.com/in/el-aouad-ouaail/)
+- Email: ouaailelaouad@gmail.com
+
 
 ---
 
@@ -554,6 +546,6 @@ docker-compose up -d
 
 ⭐ Star this project if you found it interesting!
 
-[Report Bug](https://github.com/your-username/task-manager/issues) · [Request Feature](https://github.com/your-username/task-manager/issues)
+
 
 </div>
